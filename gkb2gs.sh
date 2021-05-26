@@ -11,7 +11,7 @@ fi
 
 ebuild "$(portageq get_repo_path / gentoo)/sys-kernel/gentoo-kernel-bin/gentoo-kernel-bin-${VERSION}.ebuild" clean prepare
 SRC_FOLDER="/var/tmp/portage/sys-kernel/gentoo-kernel-bin-${VERSION}"
-SRC_CONFIG="${SRC_FOLDER}/work/usr/src/linux-${VERSION}/.config"
+SRC_CONFIG="${SRC_FOLDER}/work/usr/src/linux-${VERSION}-gentoo-dist/.config"
 DST_CONFIG="/etc/kernels/kernel-config-$(sed 's/\([0-9]*\.[0-9]*\.[0-9]*\)/\1-gentoo/' <<< "${VERSION}")-x86_64"
 
 if [ ! -f "${DST_CONFIG}" ]; then
