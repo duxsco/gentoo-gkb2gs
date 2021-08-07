@@ -2,7 +2,7 @@
 
 The script `gkb2gs.sh` extracts the kernel config from `sys-kernel/gentoo-kernel-bin` and saves that into `/etc/kernels/`.
 
-To use the soon to be lts Linux kernel do the following:
+To use the current LTS Linux kernel (as of August 7th 2021) do the following:
 
 1. Create the directory `/etc/kernels`
 2. Add `sys-kernel/gentoo-kernel-bin -initramfs` to `package.use`. We just extract the config and don't need the initramfs.
