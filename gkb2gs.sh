@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -ex
+set -x
+set -euo pipefail
 
 VERSION="${1:-$(emerge --search "%^sys-kernel/gentoo-kernel-bin$" | grep -i "latest version available" | awk '{print $NF}')}"
 
