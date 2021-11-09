@@ -60,3 +60,7 @@ sys-kernel/gentoo-sources ~amd64
 ```
 
 You can also specify a version with `gkb2gs.sh 5.10.13`.
+
+## Other Gentoo Linux repos
+
+https://github.com/duxsco?tab=repositories&q=gentoo-
