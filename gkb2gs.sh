@@ -1,29 +1,78 @@
 #!/usr/bin/env bash
 
-set -x
-set -euo pipefail
+function help() {
+cat <<EOF
+${0##*\/} saves the kernel config of sys-kernel/gentoo-kernel-bin in /etc/kernels/
 
-VERSION="${1:-$(emerge --search "%^sys-kernel/gentoo-kernel-bin$" | grep -Po "Latest version available:[[:space:]]*\K.*")}"
+You can choose a specific version, e.g.:
+bash ${0##*\/} -v 5.15.29
 
-if [[ $# -eq 0 ]] && [[ ${VERSION} != $(emerge --search "%^sys-kernel/gentoo-sources$" | grep -Po "Latest version available:[[:space:]]*\K.*") ]]; then
-  echo "versions differ"
-  exit 1
+Or, you can select the latest available version:
+bash ${0##*\/} -l
+
+To print this help:
+bash ${0##*\/} -h
+EOF
+}
+
+while getopts hlv: opt; do
+    case $opt in
+        l) USE_LATEST_AVAILABLE_KERNEL_VERSION="true";;
+        v) KERNEL_VERSION="${OPTARG}";;
+        h) help; exit 0;;
+        *) help; exit 1;;
+    esac
+done
+
+if  { [[ -z ${USE_LATEST_AVAILABLE_KERNEL_VERSION} ]] && [[ -z ${KERNEL_VERSION} ]]; } || \
+    { [[ -n ${USE_LATEST_AVAILABLE_KERNEL_VERSION} ]] && [[ -n ${KERNEL_VERSION} ]]; }; then
+    help
+    exit 1
 fi
 
-ebuild "$(portageq get_repo_path / gentoo)/sys-kernel/gentoo-kernel-bin/gentoo-kernel-bin-${VERSION}.ebuild" clean prepare
-SRC_FOLDER="$(portageq envvar PORTAGE_TMPDIR)/portage/sys-kernel/gentoo-kernel-bin-${VERSION}"
-SRC_CONFIG="${SRC_FOLDER}/work/usr/src/linux-${VERSION}-gentoo-dist/.config"
+if [[ -n ${USE_LATEST_AVAILABLE_KERNEL_VERSION} ]]; then
+    VERSION_GENTOO_SOURCES="$(qatom -F "%{PV}" "$(portageq best_visible / gentoo-sources)")"
+    VERSION_GENTOO_KERNEL_BIN="$(qatom -F "%{PV}" "$(portageq best_visible / gentoo-kernel-bin)")"
+
+    if [[ "${VERSION_GENTOO_SOURCES}" == "${VERSION_GENTOO_KERNEL_BIN}" ]]; then
+        KERNEL_VERSION="${VERSION_GENTOO_KERNEL_BIN}"
+    else
+cat <<EOF
+Latest available versions of gentoo-kernel-bin and gentoo-sources differ!
+Use the "-v" flag. For more information, execute:
+bash ${0##*\/} -h
+EOF
+        exit 1
+    fi
+fi
+
 # shellcheck disable=SC2001
-DST_CONFIG="/etc/kernels/kernel-config-$(sed 's/\([0-9]*\.[0-9]*\.[0-9]*\)\(.*\)/\1-gentoo\2/' <<< "${VERSION}")-$(arch)"
+DST_CONFIG="/etc/kernels/kernel-config-$(sed 's/\([0-9]*\.[0-9]*\.[0-9]*\)\(.*\)/\1-gentoo\2/' <<< "${KERNEL_VERSION}")-$(arch)"
 
-if [[ ! -f ${DST_CONFIG} ]]; then
-  cp -v "${SRC_CONFIG}" "${DST_CONFIG}"
+if [[ -f ${DST_CONFIG} ]]; then
+    read -r -p "Do you want to overwrite ${DST_CONFIG}? (y/N) " OVERWRITE_CONFIG
+
+    if [[ ${OVERWRITE_CONFIG} =~ ^[yY]$ ]]; then
+        rm "${DST_CONFIG}"
+    else
+        echo "Aborting..."
+        exit 0
+    fi
 fi
 
-cmp "${SRC_CONFIG}" "${DST_CONFIG}"
-rm -rf "${SRC_FOLDER}"
-if [[ ! $(ls -A "$(portageq envvar PORTAGE_TMPDIR)/portage/sys-kernel") ]]; then
-  rmdir "$(portageq envvar PORTAGE_TMPDIR)/portage/sys-kernel"
+EBUILD="$(portageq get_repo_path / gentoo)/sys-kernel/gentoo-kernel-bin/gentoo-kernel-bin-${KERNEL_VERSION}.ebuild"
+
+if [ -f "${EBUILD}" ]; then
+    ebuild "${EBUILD}" clean prepare
+    SRC_FOLDER="$(portageq envvar PORTAGE_TMPDIR)/portage/sys-kernel/gentoo-kernel-bin-${KERNEL_VERSION}"
+    SRC_CONFIG="${SRC_FOLDER}/work/usr/src/linux-${KERNEL_VERSION}-gentoo-dist/.config"
+
+    rsync -a "${SRC_CONFIG}" "${DST_CONFIG}"
+
+    ebuild "${EBUILD}" clean
+else
+    echo -e "Something went wrong! The following file doesn't exist:\n${EBUILD}"
+    exit 1
 fi
 
-echo $?
+echo "${DST_CONFIG} created!"
