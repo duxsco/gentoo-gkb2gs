@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Prevent tainting variables via environment
+# See: https://gist.github.com/duxsco/fad211d5828e09d0391f018834f955c9
+unset DST_CONFIG EBUILD KERNEL_VERSION OVERWRITE_CONFIG SRC_CONFIG SRC_FOLDER USE_LATEST_AVAILABLE_KERNEL_VERSION VERSION_GENTOO_KERNEL_BIN VERSION_GENTOO_SOURCES
+
 function help() {
 cat <<EOF
 ${0##*\/} saves the kernel config of sys-kernel/gentoo-kernel-bin in /etc/kernels/
@@ -18,15 +22,19 @@ EOF
 while getopts hlv: opt; do
     case $opt in
         l) USE_LATEST_AVAILABLE_KERNEL_VERSION="true";;
-        v) KERNEL_VERSION="${OPTARG}";;
+        v) KERNEL_VERSION="$OPTARG";;
         h) help; exit 0;;
-        *) help; exit 1;;
+        ?) help; exit 1;;
     esac
 done
 
 if  { [[ -z ${USE_LATEST_AVAILABLE_KERNEL_VERSION} ]] && [[ -z ${KERNEL_VERSION} ]]; } || \
     { [[ -n ${USE_LATEST_AVAILABLE_KERNEL_VERSION} ]] && [[ -n ${KERNEL_VERSION} ]]; }; then
-    help
+cat <<EOF
+You have to execute this script either with "-l" or "-v" flag.
+For more information, execute:
+bash ${0##*\/} -h
+EOF
     exit 1
 fi
 
