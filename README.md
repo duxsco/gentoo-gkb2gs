@@ -4,13 +4,20 @@ The script `gkb2gs.sh` extracts the kernel config from `sys-kernel/gentoo-kernel
 
 ```bash
 $ bash gkb2gs.sh -h
-gkb2gs.sh saves the kernel config of sys-kernel/gentoo-kernel-bin in /etc/kernels/
+gkb2gs.sh saves the kernel config of sys-kernel/gentoo-kernel-bin in /etc/kernels/ to be used for building sys-kernel/gentoo-sources.
 
-You can choose a specific version, e.g.:
-bash gkb2gs.sh -v 5.15.29
+You can autoselect best visible versions of both packages:
+bash gkb2gs.sh
 
-Or, you can select the latest available version:
-bash gkb2gs.sh -l
+Or, specify certain versions with following flags:
+"-b" for sys-kernel/gentoo-kernel-bin
+"-s" for sys-kernel/gentoo-sources which makes the use of "-b" mandatory
+
+The following extracts =sys-kernel/gentoo-kernel-bin-5.15.32 config to be used for the best visible version of sys-kernel/gentoo-sources:
+bash gkb2gs.sh -b 5.15.32
+
+The following extracts =sys-kernel/gentoo-kernel-bin-5.15.32 config to be used for =sys-kernel/gentoo-sources-5.15.32-r1:
+bash gkb2gs.sh -b 5.15.32 -s 5.15.32-r1
 
 To print this help:
 bash gkb2gs.sh -h
@@ -37,7 +44,7 @@ sys-kernel/gentoo-sources ~amd64
 5. Execute the script as root, e.g.:
 
 ```bash
-# bash gkb2gs.sh -l
+# bash gkb2gs.sh
  * linux-5.15.tar.xz BLAKE2B SHA512 size ;-) ...                                                                [ ok ]
  * genpatches-5.15-32.base.tar.xz BLAKE2B SHA512 size ;-) ...                                                   [ ok ]
  * genpatches-5.15-32.extras.tar.xz BLAKE2B SHA512 size ;-) ...                                                 [ ok ]
