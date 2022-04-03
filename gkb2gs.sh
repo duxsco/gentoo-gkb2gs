@@ -40,11 +40,11 @@ done
 ########################
 
 if [[ -z ${GENTOO_SOURCES_VERSION} ]]; then
-    GENTOO_SOURCES_VERSION="$(qatom -F "%{PVR}" "$(portageq best_visible / gentoo-sources)")"
+    GENTOO_SOURCES_VERSION="$(qatom -F "%{PVR}" "$(portageq best_visible / sys-kernel/gentoo-sources)")"
 fi
 
 if [[ -z ${GENTOO_KERNEL_BIN_VERSION} ]]; then
-    GENTOO_KERNEL_BIN_VERSION="$(qatom -F "%{PVR}" "$(portageq best_visible / gentoo-kernel-bin)")"
+    GENTOO_KERNEL_BIN_VERSION="$(qatom -F "%{PVR}" "$(portageq best_visible / sys-kernel/gentoo-kernel-bin)")"
 
     if [[ ${GENTOO_KERNEL_BIN_VERSION} != "${GENTOO_SOURCES_VERSION}" ]]; then
 cat <<EOF
