@@ -77,7 +77,7 @@ fi
 # save paths to configs #
 #########################
 
-GENTOO_KERNEL_BIN_CONFIG="$(portageq envvar PORTAGE_TMPDIR)/portage/sys-kernel/gentoo-kernel-bin-${GENTOO_KERNEL_BIN_VERSION}/work/usr/src/linux-$(qatom -F "%{PV}" "gentoo-kernel-bin-${GENTOO_KERNEL_BIN_VERSION}")-gentoo-dist/.config"
+GENTOO_KERNEL_BIN_CONFIG="$(portageq envvar PORTAGE_TMPDIR)/portage/sys-kernel/gentoo-kernel-bin-${GENTOO_KERNEL_BIN_VERSION}/work/modprep/.config"
 
 # shellcheck disable=SC2001
 GENTOO_SOURCES_CONFIG="/etc/kernels/kernel-config-$(sed 's/\([0-9]*\.[0-9]*\.[0-9]*\)\(.*\)/\1-gentoo\2/' <<< "${GENTOO_SOURCES_VERSION}")-$(arch)"
