@@ -2,7 +2,7 @@
 
 # Prevent tainting variables via environment
 # See: https://gist.github.com/duxsco/fad211d5828e09d0391f018834f955c9
-unset GENTOO_KERNEL_BIN_CONFIG GENTOO_KERNEL_BIN_EBUILD GENTOO_KERNEL_BIN_VERSION GENTOO_SOURCES_CONFIG GENTOO_SOURCES_EBUILD GENTOO_SOURCES_VERSION OVERWRITE_CONFIG
+unset GENTOO_KERNEL_BIN_CONFIG GENTOO_KERNEL_BIN_EBUILD GENTOO_KERNEL_BIN_VERSION GENTOO_SOURCES_CONFIG GENTOO_SOURCES_EBUILD GENTOO_SOURCES_VERSION OVERWRITE_CONFIG SELINUX_ENFORCING
 
 function help() {
 cat <<EOF
@@ -34,6 +34,16 @@ while getopts b:hs: opt; do
         ?) help; exit 1;;
     esac
 done
+
+###########
+# selinux #
+###########
+
+if [[ -f /sys/fs/selinux/enforce ]] && [[ $(</sys/fs/selinux/enforce) -eq 1 ]]; then
+    SELINUX_ENFORCING="true"
+else
+    SELINUX_ENFORCING="false"
+fi
 
 ########################
 # save version numbers #
@@ -97,8 +107,14 @@ fi
 # extract and save config #
 ###########################
 
-ebuild "${GENTOO_KERNEL_BIN_EBUILD}" clean prepare configure
-rsync -a "${GENTOO_KERNEL_BIN_CONFIG}" "${GENTOO_SOURCES_CONFIG}"
-ebuild "${GENTOO_KERNEL_BIN_EBUILD}" clean
+if [[ ${SELINUX_ENFORCING} == true ]]; then
+    runcon -t portage_t -- ebuild "${GENTOO_KERNEL_BIN_EBUILD}" clean prepare configure
+    rsync -a "${GENTOO_KERNEL_BIN_CONFIG}" "${GENTOO_SOURCES_CONFIG}"
+    runcon -t portage_t -- ebuild "${GENTOO_KERNEL_BIN_EBUILD}" clean
+else
+    ebuild "${GENTOO_KERNEL_BIN_EBUILD}" clean prepare configure
+    rsync -a "${GENTOO_KERNEL_BIN_CONFIG}" "${GENTOO_SOURCES_CONFIG}"
+    ebuild "${GENTOO_KERNEL_BIN_EBUILD}" clean
+fi
 
 echo "${GENTOO_SOURCES_CONFIG} created!"
