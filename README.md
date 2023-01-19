@@ -1,5 +1,7 @@
 # gkb2gs - gentoo-kernel-bin config to gentoo-sources
 
+> ️⚠️ You can find information on my GnuPG public key in my [GitHub profile README](https://github.com/duxsco/)! ⚠️
+
 ⚠️ `app-portage/portage-utils` is required for the `gkb2gs.sh` to function! ⚠️
 
 The script `gkb2gs.sh` extracts the kernel config from `sys-kernel/gentoo-kernel-bin` and saves that into `/etc/kernels/`.
